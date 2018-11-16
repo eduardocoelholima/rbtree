@@ -1,7 +1,6 @@
 #ifndef _RBTREE_CPP_
 #define _RBTREE_CPP_
 #include <iostream>
-#include <cstdio>
 #include "RBTree.hpp"
 using namespace std;
 
