@@ -1,0 +1,9 @@
+teste 0
+abuso 1
+home 1
+coelho 1
+lebre 1
+tatu 1
+tamandua 1
+abuso 0
+abuso 0

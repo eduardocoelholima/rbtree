@@ -9,10 +9,10 @@ int main(int argc, char const *argv[]) {
 	RBTree<string> *tree = new RBTree<string>();
 	string filename;
 
-	// looks for "dicionario1.txt" if no filename is provided
+	// checks if filename was specified, otherwise exits
 	if (argv[1]==nullptr) {
-		cout<<"No file specified, looking for dicionario1.txt..."<<endl;
-		filename = "dicionario1.txt";
+		cout<<"No file specified, exiting..."<<endl;
+		return 0;
 	}
 	// or use the provided filename in the command-line
 	else {
@@ -27,16 +27,29 @@ int main(int argc, char const *argv[]) {
   	if (readfile.is_open()) {
 		while (readfile>>word) {
 			readfile >> command;
-			if (command=="1") tree->insert(word);
-			else tree->erase(word);
+			// process an insert command
+			if (command=="1") 
+				tree->insert(word);
+			// process an delete command
+			else
+				tree->erase(word);
 		}
 		readfile.close();
   	}
-	else cout << "Could not open "<<filename<<endl; 
+	else cout << "Could not open " << filename << endl; 
 
-	//prints key values (print) and each nodes data (check)
+	// loops searching for keys by user input
+	// a blank input will make the loop end
+	cout << "> Search for key: ";
+	while (getline(std::cin, word)) {
+		if (word.empty()) break;
+		tree->search(word);
+		cout << "> Search for key: ";
+	}
+
+	// prints key values (print) and each nodes data (check)
+	cout << "> Exiting..." << endl;
 	tree->print();
+	cout<<"Tree check:"<<endl;
 	tree->check();
-
-	return 0;
 }

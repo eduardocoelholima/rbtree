@@ -8,9 +8,10 @@ using namespace std;
 template <typename T>
 RBTree<T>::RBTree() {
     sentynel = new Node<T>("<sentynel>", BLACK, sentynel, sentynel, sentynel);
+    sentynel->parent = sentynel;
+    sentynel->left = sentynel;
+    sentynel->right = sentynel;
 	root = sentynel;
-    check(sentynel);
-
 }
 
 
@@ -157,13 +158,16 @@ void RBTree<T>::insertFixUp(Node<T> *node) {
 template <class T>
 void RBTree<T>::transplant(Node<T> *u, Node<T> *v) {
     if (u->parent == sentynel) {
+        root = v;
     }
     else {
-        if (u == u->parent->left) u->parent->left = v;
-        else u->parent->right = v;
+        if (u == u->parent->left) {
+            if (u->parent!=sentynel) u->parent->left = v;
+        }
+        else if (u->parent!=sentynel) u->parent->right = v;
     }
-    v->parent = u->parent;
-    delete u;
+    if (v!=sentynel) 
+        v->parent = u->parent;
 }
 
 //locates tree's node with the least key
@@ -177,29 +181,28 @@ Node<T>* RBTree<T>::treeMinimum(Node<T> *x) {
 template <class T>
 void RBTree<T>::erase(T key) {;
     cout<<"> Erasing key "<<key<<"...";
-    Node<T> *z = find(key);
+    Node<T> *z = find(key); // z is the node that will be erased
     if (z == sentynel) {
         cout<<": not found, nothing to be done."<<endl;
         return;
     }
     cout<<": found. ";
-    Node<T> *x, *y;
+    Node<T> *x, *y; // x keeps track of color balancing
     int yOriginalColor;
     y = z;
     yOriginalColor = y->color;
-    if (z->left == sentynel) {
+    if (z->left == sentynel) { // if z has no left childs, z right child can replace it
         x = z->right;
         transplant(z, z->right);
     }
     else {
-        if (z->right == sentynel) {
+        if (z->right == sentynel) { // if z as no right child, z left child can replace it
             x = z->left;
             transplant(z, z->left);
         }
-        else {
+        else { // z has both children
             y = treeMinimum(z->right);
-            if (y==sentynel) yOriginalColor = BLACK;
-            else yOriginalColor = y->color;
+            yOriginalColor = y->color;
             x = y->right;
             if (y->parent == z)
                 x->parent = y;
@@ -208,15 +211,22 @@ void RBTree<T>::erase(T key) {;
                 y->right = z->right;
                 y->right->parent = y;
             }
-        transplant(z, y);
-        y->left = z->left;
-        y->left->parent = y;
-        y->color = z->color;
+            transplant(z, y);
+            y->left = z->left;
+            y->left->parent = y;
+            y->color = z->color;
         }
     }
-    if (yOriginalColor == BLACK)
+    //delete z;
+    if (yOriginalColor == BLACK and x!=sentynel)
         eraseFixUp(x);
     cout<<" Removed. "<<endl;
+
+    // per project requirement, will call print and check for every successful removal
+    print();
+    cout<<"Tree check:"<<endl;
+    check();
+
 }
 
 
@@ -255,7 +265,6 @@ void RBTree<T>::eraseFixUp(Node<T> *x) {
                 brother->right->color = BLACK;
                 leftRotate(x->parent);
                 x = root;
-                //break;
             }
         } else { //x is the right child
             brother = x->parent->left;
@@ -286,17 +295,25 @@ void RBTree<T>::eraseFixUp(Node<T> *x) {
                 brother->left->color = BLACK;
                 rightRotate(x->parent);
                 x = root;
-                //break;
             }
         }
     }
-    if (x!=sentynel) {
-        x->color = BLACK;
-    }
+    x->color = BLACK;
+}
+
+
+// search for a key and prints it (very similar to find, but
+// prints the result and has no return
+template <class T>
+void RBTree<T>::search(T key){
+    Node<T> *result = find(root, key);
+    if (result == sentynel) cout<<"Not found."<<endl;
+    else cout<<"Found key "<<key<<"."<<endl;
 }
 
 
 // find the node from a subtree that has a given key and returns it
+// will return the sentynel if the key is not found
 template <class T>
 Node<T>* RBTree<T>::find(Node<T>* node, T key) {
     if (node==sentynel) return sentynel;
@@ -359,10 +376,10 @@ void RBTree<T>::print(Node<T> *node){
 template <class T>
 void RBTree<T>::print() {
     if (root == sentynel) {
-        cout << "Current tree keys: <empty tree>" << endl;
+        cout << "Tree print:\n <empty tree>" << endl;
         return;
     }
-    cout << "Current tree keys: ";
+    cout << "Tree print:\n ";
     print(root);
     cout << " " << endl;
 }
@@ -371,7 +388,7 @@ void RBTree<T>::print() {
 template <class T>
 void RBTree<T>::check(Node<T> *node) {
     if (node != sentynel) {
-        string line = "( ";
+        string line = " ( ";
         if (node->parent==sentynel) line+="NIL, ";
         else { line +=node->parent->key; line += ", ";}
         line += node->key;
@@ -384,7 +401,7 @@ void RBTree<T>::check(Node<T> *node) {
         else {line += node->left->key; line += ", ";}
         if (node->right==sentynel) line += "NIL )\n";
         else {line += node->right->key; line += " )\n";}
-        cout <<line;
+        cout << line;
         check(node->left);
         check(node->right);
     }
@@ -394,6 +411,7 @@ void RBTree<T>::check(Node<T> *node) {
 template <class T>
 void RBTree<T>::check() {
     if (root!=sentynel) check(root);
+    else cout << " <empty tree>" << endl;
 }
 
 

@@ -41,6 +41,7 @@ public:
 	void print();
 	void check();
 	~RBTree();
+	void search(T key);
 };
 
 #include "RBTree.cpp"
